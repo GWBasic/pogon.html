@@ -1,6 +1,6 @@
 /**
  * Pogon module
- * @module pogon
+ * @module pogon.html
  */
 
 
