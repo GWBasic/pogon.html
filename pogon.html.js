@@ -152,3 +152,5 @@ async function compileAndMergeFromFile($, templateOutletTag, filePath, options) 
 	templateOutletTag.remove();
 }
 
+exports.__express = exports.renderFile;
+
