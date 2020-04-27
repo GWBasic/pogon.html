@@ -1,0 +1,32 @@
+{
+  "name": "pogon.html",
+  "version": "1.0.0",
+  "description": "Global look and feel HTML-based templating for Nodejs (expressjs)",
+  "main": "pogon.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GWBasic/pogon.html.git"
+  },
+  "keywords": [
+    "templating",
+    "html",
+    "pogon",
+    "handlebars",
+    "mustache"
+  ],
+  "author": "Andrew Rondeau",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GWBasic/pogon.html/issues"
+  },
+  "homepage": "https://github.com/GWBasic/pogon.html#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "cheerio": "^1.0.0-rc.3",
+    "handlebars": "^4.7.6",
+    "mocha": "^7.1.2"
+  }
+}
