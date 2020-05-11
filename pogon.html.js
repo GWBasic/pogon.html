@@ -60,8 +60,23 @@ exports.testMode = false;
  */
 exports.renderFile = async (filePath, options, callback) => {
 	try {
+		const uncompiledContent = (await fs.readFile(filePath)).toString();
+
+		const processHandlebars = handlebars.compile(uncompiledContent);
+		const compiledContent = processHandlebars(options);
+	
+		content$ = cheerio.load(compiledContent);
+
 		const dirName = path.dirname(filePath);
-		const templatePath = path.join(dirName, TEMPLATE_NAME);
+
+		// Determine if the default template is overridden
+		var templatePath;
+		const htmlTag = content$('html')[0];
+		if (htmlTag.attribs['pogon-template']) {
+			templatePath = path.join(dirName, htmlTag.attribs['pogon-template']);
+		} else {
+			templatePath = path.join(dirName, TEMPLATE_NAME);
+		}
 
 		var templateContent = (await fs.readFile(templatePath)).toString();
 		const compiledTemplateContent = handlebars.compile(templateContent);
@@ -71,7 +86,7 @@ exports.renderFile = async (filePath, options, callback) => {
 		const templateOutletTag = $('pogon_outlet');
 
 		// First, merge the requested file into the template
-		await compileAndMergeFromFile($, templateOutletTag, filePath, options);
+		await merge($, templateOutletTag, content$);
 
 		// Now search for and merge in components
 		var tagsProcessed;
@@ -147,7 +162,11 @@ async function compileAndMergeFromFile($, templateOutletTag, filePath, options) 
 	const compiledContent = processHandlebars(options);
 
 	content$ = cheerio.load(compiledContent);
-	
+
+	await merge($, templateOutletTag, content$);
+}
+
+async function merge($, templateOutletTag, content$) {
 	// First, clean up the title tags so there only is one
 	const currentTtitleTag = $('head title');
 	const contentTitleTag = content$('head title');

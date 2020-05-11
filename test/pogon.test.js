@@ -132,6 +132,18 @@ describe('Pogon tests', () => {
             }
 		}
     });
+
+    it('pogon-template', async () => {
+        const result = await runPogon('overrides_template.pogon.html');
+
+        const $ = cheerio.load(result);
+
+        const titleElement = $('title')
+        assert.equal(titleElement.text(), 'Overridden template');
+
+        const contentElement = $('#content')
+        assert.equal(contentElement.text(), 'This page overrode the template');
+    });
 });
 
 async function runPogon(templateName, options) {
