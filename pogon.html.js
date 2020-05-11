@@ -102,6 +102,22 @@ exports.renderFile = async (filePath, options, callback) => {
 			tagsProcessed = componentOutletTags.length;
 		} while (tagsProcessed > 0);
 
+		// Check off default values in forms
+		const inputTags = $('input');
+		for (var inputTagIndex = 0; inputTagIndex < inputTags.length; inputTagIndex++) {
+			const inputTag = inputTags[inputTagIndex];
+
+			if (inputTag.attribs['pogon-checked']) {
+				const checkedValue = inputTag.attribs['pogon-checked'];
+				delete inputTag.attribs['pogon-checked'];
+
+				if (inputTag.attribs.value == checkedValue) {
+					const inputTag$ = $(inputTag);
+					inputTag$.attr('checked','checked');
+				}
+			}
+		}
+
 		var rendered = $.root().html();
 		if (module.exports.testMode) {
 			testResult = {

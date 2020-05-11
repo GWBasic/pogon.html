@@ -107,7 +107,31 @@ describe('Pogon tests', () => {
         } finally {
             pogon.testMode = false;
         }
-    })
+    });
+
+    it('pogon-checked', async () => {
+
+        const result = await runPogon('pogon-checked.pogon.html', {"for-test": 'three'});
+
+        const $ = cheerio.load(result);
+        const inputTags = $('input');
+        
+        assert.equal(inputTags.length, 4, 'incorrect number of input tags');
+
+		for (var inputTagIndex = 0; inputTagIndex < inputTags.length; inputTagIndex++) {
+			const inputTag = inputTags[inputTagIndex];
+
+            assert.isUndefined(inputTag.attribs['pogon-checked'], 'pogon-checked attribute not removed');
+
+            const value = inputTag.attribs.value;
+
+            if (value == 'three') {
+                assert.equal(inputTag.attribs.checked, 'checked', 'Checked not set');
+            } else {
+                assert.isUndefined(inputTag.attribs.checked, `Checked incorrectly defined for ${value}`);
+            }
+		}
+    });
 });
 
 async function runPogon(templateName, options) {
