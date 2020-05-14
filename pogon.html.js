@@ -65,7 +65,7 @@ exports.renderFile = async (filePath, options, callback) => {
 		const processHandlebars = handlebars.compile(uncompiledContent);
 		const compiledContent = processHandlebars(options);
 	
-		content$ = cheerio.load(compiledContent);
+		const content$ = cheerio.load(compiledContent);
 
 		const dirName = path.dirname(filePath);
 
