@@ -1,3 +1,5 @@
+"use strict";
+
 const assert        = require('chai').assert;
 const cheerio		= require('cheerio');
 const path			= require('path');
