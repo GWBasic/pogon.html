@@ -1,3 +1,5 @@
+"use strict";
+
 /**
  * Pogon module
  * @module pogon.html
@@ -135,7 +137,7 @@ exports.renderFile = async (filePath, options, callback) => {
 
 		var rendered = $.root().html();
 		if (module.exports.testMode) {
-			testResult = {
+			const testResult = {
 				html: rendered,
 				options: options,
 				filePath: filePath,
@@ -161,7 +163,7 @@ async function compileAndMergeFromFile($, templateOutletTag, filePath, options) 
 	const processHandlebars = handlebars.compile(uncompiledContent);
 	const compiledContent = processHandlebars(options);
 
-	content$ = cheerio.load(compiledContent);
+	const content$ = cheerio.load(compiledContent);
 
 	await merge($, templateOutletTag, content$);
 }
