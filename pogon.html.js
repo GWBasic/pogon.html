@@ -48,6 +48,11 @@ exports.unregisterCustomTag = customTagName => {
 exports.testMode = false;
 
 /**
+ * Overrides the default template filename. When unassigned, pogon will use template.html
+ */
+exports.defaultTemplate = null;
+
+/**
  * Called from 'renderFile' on success or error
  * @callback renderFileCallback
  * @param {?error} err - Called on error
@@ -77,7 +82,7 @@ exports.renderFile = async (filePath, options, callback) => {
 		if (htmlTag.attribs['pogon-template']) {
 			templatePath = path.join(dirName, htmlTag.attribs['pogon-template']);
 		} else {
-			templatePath = path.join(dirName, TEMPLATE_NAME);
+			templatePath = path.join(dirName, exports.defaultTemplate || TEMPLATE_NAME);
 		}
 
 		var templateContent = (await fs.readFile(templatePath)).toString();

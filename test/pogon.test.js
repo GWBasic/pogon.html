@@ -146,6 +146,17 @@ describe('Pogon tests', () => {
         const contentElement = $('#content')
         assert.equal(contentElement.text(), 'This page overrode the template');
     });
+
+    it('override default template', async () => {
+        var result = await runPogon('hastitle.pogon.html');
+
+        assert.isFalse(result.includes('The default template is overridden'), 'Template overridden');
+
+        pogon.defaultTemplate = 'template_override.html';
+        var result = await runPogon('hastitle.pogon.html');
+
+        assert.isTrue(result.includes('The default template is overridden'), 'Template not overridden');
+    });
 });
 
 async function runPogon(templateName, options) {
