@@ -18,7 +18,7 @@ describe('Pogon tests', () => {
     });
 
     it('handlebars and mustaches', async () => {
-        const result = await runPogon(
+        const result = await render(
             'handlebars.pogon.html', {
                 a: 1,
                 b: 2,
@@ -37,7 +37,7 @@ describe('Pogon tests', () => {
     });
 
     it('pogon_components', async () => {
-        const result = await runPogon(
+        const result = await render(
             'usescomponent.pogon.html', {
                 in_component: 888,
                 global_a: 11,
@@ -63,7 +63,7 @@ describe('Pogon tests', () => {
         pogon.registerCustomTag('custom_tag', customTagHandler);
 
         try {
-            const result = await runPogon(
+            const result = await render(
                 'usescustomtag.pogon.html', {
                     toassert: 99});
 
@@ -84,12 +84,12 @@ describe('Pogon tests', () => {
             global_b: 22,
             global_c: 33};
 
-        const expectedHtml = await runPogon('handlebars.pogon.html', expectedOptions);
+        const expectedHtml = await render('handlebars.pogon.html', expectedOptions);
 
         pogon.testMode = true;
 
         try {
-            const result = await runPogon('handlebars.pogon.html', expectedOptions);
+            const result = await render('handlebars.pogon.html', expectedOptions);
 
             const rendered = JSON.parse(result);
 
@@ -113,7 +113,7 @@ describe('Pogon tests', () => {
 
     it('pogon-checked', async () => {
 
-        const result = await runPogon('pogon-checked.pogon.html', {"for-test": 'three'});
+        const result = await render('pogon-checked.pogon.html', {"for-test": 'three'});
 
         const $ = cheerio.load(result);
         const inputTags = $('input');
@@ -136,7 +136,7 @@ describe('Pogon tests', () => {
     });
 
     it('pogon-template', async () => {
-        const result = await runPogon('overrides_template.pogon.html');
+        const result = await render('overrides_template.pogon.html');
 
         const $ = cheerio.load(result);
 
@@ -148,36 +148,60 @@ describe('Pogon tests', () => {
     });
 
     it('override default template', async () => {
-        var result = await runPogon('hastitle.pogon.html');
+        var result = await render('hastitle.pogon.html');
 
         assert.isFalse(result.includes('The default template is overridden'), 'Template overridden');
 
         pogon.defaultTemplate = 'template_override.html';
-        var result = await runPogon('hastitle.pogon.html');
+        var result = await render('hastitle.pogon.html');
 
         assert.isTrue(result.includes('The default template is overridden'), 'Template not overridden');
     });
+
+    it('Express template engine, success', async () => {
+        var called = false;
+        const callback = (err, result) => {
+            if (err) {
+                throw err;
+            }
+
+            called = true;
+
+            const $ = cheerio.load(result);
+            const titleTag = $('head title');
+        
+            assert.equal(titleTag.text(), 'Title in page', 'Wrong title');
+        };
+    
+        const filePath = path.join(testFolder, 'hastitle.pogon.html');
+    
+        await pogon.renderFile(filePath, {}, callback);
+    
+        assert.isTrue(called, 'Callback not called');
+    });
+
+    it('Express template engine, error', async () => {
+        var err = null;
+        const callback = (e, result) => {
+            err = e;
+        };
+    
+        const filePath = path.join(testFolder, 'dne.pogon.html');
+    
+        await pogon.renderFile(filePath, {}, callback);
+    
+        assert.isNotNull(err);
+        assert.equal(err.message, `ENOENT: no such file or directory, open '${filePath}'`);
+    });
 });
 
-async function runPogon(templateName, options) {
-    var result = null;
-    const callback = (err, r) => {
-        if (err) {
-            throw err;
-        }
-        result = r;
-    };
-
-    const hasTitlePath = path.join(testFolder, templateName);
-
-    await pogon.renderFile(hasTitlePath, options, callback);
-
-    assert.isNotNull(result, 'Callback not called');
-    return result;
+async function render(filename, options) {
+    const filePath = path.join(testFolder, filename);
+    return await pogon.render(filePath, options);
 }
 
 async function checkMerge(templateName, expectedTitle) {
-    var result = await runPogon(templateName, {});
+    var result = await render(templateName, {});
 
     const $ = cheerio.load(result);
     const titleTag = $('head title');

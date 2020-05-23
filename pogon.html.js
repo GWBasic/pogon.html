@@ -52,6 +52,104 @@ exports.testMode = false;
  */
 exports.defaultTemplate = null;
 
+
+/**
+ * Renders the file using the passed options
+ * @param {!string} filePath - The file to render. There must be a "template.html" in the same folder or an error will occur
+ * @param {!Object} options - The object that's passed to the template. (Typically passed to response.render())
+ * @returns {!string} - The rendered result
+ */
+exports.render = async (filePath, options) => {
+	const uncompiledContent = (await fs.readFile(filePath)).toString();
+
+	const processHandlebars = handlebars.compile(uncompiledContent);
+	const compiledContent = processHandlebars(options);
+
+	const content$ = cheerio.load(compiledContent);
+
+	const dirName = path.dirname(filePath);
+
+	// Determine if the default template is overridden
+	var templatePath;
+	const htmlTag = content$('html')[0];
+	if (htmlTag.attribs['pogon-template']) {
+		templatePath = path.join(dirName, htmlTag.attribs['pogon-template']);
+	} else {
+		templatePath = path.join(dirName, exports.defaultTemplate || TEMPLATE_NAME);
+	}
+
+	var templateContent = (await fs.readFile(templatePath)).toString();
+	const compiledTemplateContent = handlebars.compile(templateContent);
+	templateContent = compiledTemplateContent(options);
+
+	const $ = cheerio.load(templateContent);
+	const templateOutletTag = $('pogon_outlet');
+
+	// First, merge the requested file into the template
+	await merge($, templateOutletTag, content$);
+
+	// Now search for and merge in components
+	var tagsProcessed;
+	do {
+		const componentOutletTags = $('pogon_component');
+
+		for (var componentOutletTagIndex = 0; componentOutletTagIndex < componentOutletTags.length; componentOutletTagIndex++) {
+			const componentOutletTag = componentOutletTags[componentOutletTagIndex];
+			const name = componentOutletTag.attribs.name;
+			const componentFilePath = path.join(dirName, name);
+
+			await compileAndMergeFromFile($, $(componentOutletTag), componentFilePath, options);
+		}
+
+		for (var customTagName in customTagHandlers) {
+			const customOutletTags = $(customTagName);
+
+			for (var customOutletTagIndex = 0; customOutletTagIndex < customOutletTags.length; customOutletTagIndex++) {
+				const customOutletTag = customOutletTags[customOutletTagIndex];
+				const customOutletTag$ = $(customOutletTag);
+				const { componentFileName, newOptions } = await customTagHandlers[customTagName](options, customOutletTag.attribs, customOutletTag$.html());
+				const componentFilePath = path.join(dirName, componentFileName);
+				
+				await compileAndMergeFromFile($, customOutletTag$, componentFilePath, newOptions);
+			}
+		}
+
+		tagsProcessed = componentOutletTags.length;
+	} while (tagsProcessed > 0);
+
+	// Check off default values in forms
+	const inputTags = $('input');
+	for (var inputTagIndex = 0; inputTagIndex < inputTags.length; inputTagIndex++) {
+		const inputTag = inputTags[inputTagIndex];
+
+		if (inputTag.attribs['pogon-checked']) {
+			const checkedValue = inputTag.attribs['pogon-checked'];
+			delete inputTag.attribs['pogon-checked'];
+
+			if (inputTag.attribs.value == checkedValue) {
+				const inputTag$ = $(inputTag);
+				inputTag$.attr('checked','checked');
+			}
+		}
+	}
+
+	var rendered = $.root().html();
+	if (module.exports.testMode) {
+		const testResult = {
+			html: rendered,
+			options: options,
+			filePath: filePath,
+			templatePath: templatePath,
+			dirName: dirName,
+			fileName: filePath.substring(dirName.length + 1)
+		};
+
+		rendered = JSON.stringify(testResult);
+	}
+
+	return rendered;
+};
+
 /**
  * Called from 'renderFile' on success or error
  * @callback renderFileCallback
@@ -67,95 +165,8 @@ exports.defaultTemplate = null;
  */
 exports.renderFile = async (filePath, options, callback) => {
 	try {
-		const uncompiledContent = (await fs.readFile(filePath)).toString();
-
-		const processHandlebars = handlebars.compile(uncompiledContent);
-		const compiledContent = processHandlebars(options);
-	
-		const content$ = cheerio.load(compiledContent);
-
-		const dirName = path.dirname(filePath);
-
-		// Determine if the default template is overridden
-		var templatePath;
-		const htmlTag = content$('html')[0];
-		if (htmlTag.attribs['pogon-template']) {
-			templatePath = path.join(dirName, htmlTag.attribs['pogon-template']);
-		} else {
-			templatePath = path.join(dirName, exports.defaultTemplate || TEMPLATE_NAME);
-		}
-
-		var templateContent = (await fs.readFile(templatePath)).toString();
-		const compiledTemplateContent = handlebars.compile(templateContent);
-		templateContent = compiledTemplateContent(options);
-
-		const $ = cheerio.load(templateContent);
-		const templateOutletTag = $('pogon_outlet');
-
-		// First, merge the requested file into the template
-		await merge($, templateOutletTag, content$);
-
-		// Now search for and merge in components
-		var tagsProcessed;
-		do {
-			const componentOutletTags = $('pogon_component');
-
-			for (var componentOutletTagIndex = 0; componentOutletTagIndex < componentOutletTags.length; componentOutletTagIndex++) {
-				const componentOutletTag = componentOutletTags[componentOutletTagIndex];
-				const name = componentOutletTag.attribs.name;
-				const componentFilePath = path.join(dirName, name);
-
-				await compileAndMergeFromFile($, $(componentOutletTag), componentFilePath, options);
-			}
-
-			for (var customTagName in customTagHandlers) {
-				const customOutletTags = $(customTagName);
-
-				for (var customOutletTagIndex = 0; customOutletTagIndex < customOutletTags.length; customOutletTagIndex++) {
-					const customOutletTag = customOutletTags[customOutletTagIndex];
-					const customOutletTag$ = $(customOutletTag);
-					const { componentFileName, newOptions } = await customTagHandlers[customTagName](options, customOutletTag.attribs, customOutletTag$.html());
-					const componentFilePath = path.join(dirName, componentFileName);
-					
-					await compileAndMergeFromFile($, customOutletTag$, componentFilePath, newOptions);
-				}
-			}
-
-			tagsProcessed = componentOutletTags.length;
-		} while (tagsProcessed > 0);
-
-		// Check off default values in forms
-		const inputTags = $('input');
-		for (var inputTagIndex = 0; inputTagIndex < inputTags.length; inputTagIndex++) {
-			const inputTag = inputTags[inputTagIndex];
-
-			if (inputTag.attribs['pogon-checked']) {
-				const checkedValue = inputTag.attribs['pogon-checked'];
-				delete inputTag.attribs['pogon-checked'];
-
-				if (inputTag.attribs.value == checkedValue) {
-					const inputTag$ = $(inputTag);
-					inputTag$.attr('checked','checked');
-				}
-			}
-		}
-
-		var rendered = $.root().html();
-		if (module.exports.testMode) {
-			const testResult = {
-				html: rendered,
-				options: options,
-				filePath: filePath,
-				templatePath: templatePath,
-				dirName: dirName,
-				fileName: filePath.substring(dirName.length + 1)
-			};
-
-			rendered = JSON.stringify(testResult);
-		}
-
+		const rendered = await this.render(filePath, options);
 		return callback(null, rendered);
-
 	} catch (exception) {
 		console.log(exception);
 		return callback(exception)
