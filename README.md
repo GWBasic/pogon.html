@@ -3,9 +3,16 @@ Global look and feel HTML-based templating for Nodejs (expressjs)
 
 > pogonophile: an admirer of beards; a student of beards.
 
-Pogon is an HTML-based templating system for [Express](https://expressjs.com/) that's based on [Handlebars](https://handlebarsjs.com/). It merges html in a view
-with HTML in a master template resulting in a page with a global look and feel. It is intended for web applications that
-primarily use server-side rendering.
+Pogon is an HTML-based templating system for [Express](https://expressjs.com/) that's based on [Handlebars](https://handlebarsjs.com/).
+It merges html in a view with HTML in a master template resulting in a page with a global look and feel. It is intended for web
+applications that primarily use server-side rendering.
+
+## Highlights
+
+* Fully-compatible [Express template engine](https://expressjs.com/en/guide/using-template-engines.html)
+* Familiar syntax: 100% HTML and [Handlebars](https://handlebarsjs.com/)
+* Programmer-defined components
+* Test mode for easy testing of views
 
 ## For Example:
 
@@ -70,17 +77,9 @@ primarily use server-side rendering.
 </html>
 ```
 
-
-## Highlights
-
-* Fully-compatible [Express template engine](https://expressjs.com/en/guide/using-template-engines.html)
-* Familiar syntax: 100% HTML and [Handlebars](https://handlebarsjs.com/)
-* Programmer-defined components
-* Test mode for easy testing of views
-
 ## Installation / Usage
 
-NPM Coming soon!
+`npm install pogon.html`
 
 ### ExpressJS template Engine
 
