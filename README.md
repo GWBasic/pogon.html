@@ -3,7 +3,7 @@ Global look and feel HTML-based templating for Nodejs (expressjs)
 
 > pogonophile: an admirer of beards; a student of beards.
 
-Pogon is an HTML-based templating system that's based on [Handlebars](https://handlebarsjs.com/). It merges html in a view
+Pogon is an HTML-based templating system for [Express](https://expressjs.com/) that's based on [Handlebars](https://handlebarsjs.com/). It merges html in a view
 with HTML in a master template resulting in a page with a global look and feel. It is intended for web applications that
 primarily use server-side rendering.
 
@@ -90,12 +90,23 @@ app.set('view engine', 'pogon.html') // register the template engine
 ```
 (Expressjs implicitly calls `require('pogon.html')`)
 
-Simply name your files with .pogon.html, and include a template.html file in your views directory:
+In your views folder:
+* Include template.html
+* Name your view files with .pogon.html
 
-views
-* view1.pogon.html
-* view2.pogon.html
-* template.html
+Then, in your express router:
+```javascript
+router.get('/', async (req, res) => {
+    // Do something...
+
+    res.render('myview', {
+        option1: someval,
+        option2: someval
+    });
+
+    // Note that express will look for myview.pogon.html
+});
+```
 
 ### Standalone
 ```javascript
@@ -221,7 +232,7 @@ fortest.component.html
 </html>
 ```
 
-template.html: ({in_component: 66})
+template.html:
 ```html
 <!DOCTYPE html>
 <html>
@@ -237,7 +248,7 @@ template.html: ({in_component: 66})
 </html>
 ```
 
-result:
+result: ({in_component: 66})
 ```html
 <!DOCTYPE html>
 <html>
@@ -274,3 +285,8 @@ See the "custom tags" test for a complete example
 
 ## More examples
 For more examples, see the unit tests.
+
+## Contributing
+
+1. Make sure that all changes have appropriate tests added to the unit tests.
+2. Use async / await instead of callbacks.
