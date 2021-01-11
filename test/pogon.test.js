@@ -135,6 +135,30 @@ describe('Pogon tests', () => {
 		}
     });
 
+    it('pogon-selected', async () => {
+
+        const result = await render('pogon-selected.pogon.html', {"for-test": 'three'});
+
+        const $ = cheerio.load(result);
+        const optionTags = $('option');
+        
+        assert.equal(optionTags.length, 4, 'incorrect number of option tags');
+
+		for (var optionTagIndex = 0; optionTagIndex < optionTags.length; optionTagIndex++) {
+			const optionTag = optionTags[optionTagIndex];
+
+            assert.isUndefined(optionTag.attribs['pogon-selected'], 'pogon-selected attribute not removed');
+
+            const value = optionTag.attribs.value;
+
+            if (value == 'three') {
+                assert.equal(optionTag.attribs.selected, 'selected', 'Selected not set');
+            } else {
+                assert.isUndefined(optionTag.attribs.selected, `Selected incorrectly defined for ${value}`);
+            }
+		}
+    });
+
     it('pogon-template', async () => {
         const result = await render('overrides_template.pogon.html');
 
