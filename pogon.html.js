@@ -118,17 +118,34 @@ exports.render = async (filePath, options) => {
 	} while (tagsProcessed > 0);
 
 	// Check off default values in forms
-	const inputTags = $('input');
-	for (var inputTagIndex = 0; inputTagIndex < inputTags.length; inputTagIndex++) {
-		const inputTag = inputTags[inputTagIndex];
+	var tags = $('input');
+	for (var tagIndex = 0; tagIndex < tags.length; tagIndex++) {
+		const tag = tags[tagIndex];
 
-		if (inputTag.attribs['pogon-checked']) {
-			const checkedValue = inputTag.attribs['pogon-checked'];
-			delete inputTag.attribs['pogon-checked'];
+		if (tag.attribs['pogon-checked']) {
+			const checkedValue = tag.attribs['pogon-checked'];
+			delete tag.attribs['pogon-checked'];
 
-			if (inputTag.attribs.value == checkedValue) {
-				const inputTag$ = $(inputTag);
+			if (tag.attribs.value == checkedValue) {
+				const inputTag$ = $(tag);
 				inputTag$.attr('checked','checked');
+			}
+		}
+	}
+
+	// TODO: Eliminate copy & paste
+
+	tags = $('option');
+	for (var tagIndex = 0; tagIndex < tags.length; tagIndex++) {
+		const tag = tags[tagIndex];
+
+		if (tag.attribs['pogon-selected']) {
+			const checkedValue = tag.attribs['pogon-selected'];
+			delete tag.attribs['pogon-selected'];
+
+			if (tag.attribs.value == checkedValue) {
+				const inputTag$ = $(tag);
+				inputTag$.attr('selected','selected');
 			}
 		}
 	}
