@@ -1,6 +1,6 @@
 {
   "name": "pogon.html",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Global look and feel HTML-based templating for Nodejs (expressjs)",
   "main": "pogon.html.js",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/GWBasic/pogon.html#readme",
   "dependencies": {
-    "cheerio": "^1.0.0-rc.5"
+    "cheerio": "^0.22.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
